@@ -4,32 +4,23 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master',
-                url: 'https://github.com/RinkalAdesaraTops/NodejsAwsDemo.git'
+                git url: 'https://github.com/RinkalAdesaraTops/NodejsAwsDemo.git'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Docker Image') {
             steps {
-                sh 'npm install'
+                sh 'docker build -t nodejs-app .'
             }
         }
 
-        stage('Start App') {
+        stage('Run Docker Container') {
             steps {
-                sh 'npm start'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'npm test'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "Deploy steps here"
+                sh '''
+                    docker stop node-container || true
+                    docker rm node-container || true
+                    docker run -d -p 3000:3000 --name node-container nodejs-app
+                '''
             }
         }
     }
